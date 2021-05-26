@@ -41,7 +41,7 @@ export const MapView: React.FC = () => {
                 maxZoom: 18
             })
         })
-        map.on("click", onMapClick);
+        map.on("singleclick", onMapClick);
 
         setMap(map)
         loadFeatureData()
@@ -83,7 +83,16 @@ export const MapView: React.FC = () => {
     }
 
     const onMapClick = (e: MapBrowserEvent) => {
-        //TODO Implement this method
+        fetch("/api/geo-json/add", {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            method: "POST",
+            body: JSON.stringify(e.coordinate)
+        })
+            .catch(e => alert(`Error adding point: ${e.message}`))
+            .then(loadFeatureData)
     }
 
     return <div>

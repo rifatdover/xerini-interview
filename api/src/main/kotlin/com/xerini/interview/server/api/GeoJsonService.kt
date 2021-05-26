@@ -2,6 +2,7 @@
 
 package com.xerini.interview.server.api
 
+import java.net.URI
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType.APPLICATION_JSON
@@ -14,15 +15,24 @@ class GeoJsonService {
     @GET
     @Produces(APPLICATION_JSON)
     fun getGeoJson(): GeoJsonObject {
-        TODO("Implement this method")
+        val features = allCoordinates
+            .map { GeometryData(it) }
+            .map { GeoJsonFeature(it) }
+        return GeoJsonObject(features)
     }
 
     @Path("/add")
     @POST
     @Consumes(APPLICATION_JSON)
-    fun addPoint(coordinates: List<Double>): Response {
-        TODO("Implement this method")
-    }
+    fun addPoint(coordinates: List<Double>): Response = if (coordinates.validCoordinates()) {
+        allCoordinates.add(coordinates)
+        Response.created(URI.create("/geo-json/add")).build()
+    } else Response.status(400, "Invalid Coordinates").build()
+
+}
+
+fun List<Double>.validCoordinates(): Boolean {
+    return this.size == 2
 }
 
 data class GeoJsonObject(val features: List<GeoJsonFeature>) {
